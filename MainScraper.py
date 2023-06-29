@@ -9,10 +9,19 @@ For Dying with Dignity
 
 
 # Pull CSV file
-
+file_name 
 
 
 # Pull up Website
+
+Url ="https://www.canadapost-postescanada.ca/cpc/en/tools/find-a-postal-code.page"
+
+
+#function to enter address into website and receive string
+
+
+#function to parse string data 
+
 
 
 
@@ -21,4 +30,22 @@ For Dying with Dignity
 
 
 
-# Pull 
+
+
+
+# Pull postal code from csv
+
+
+
+# if no postal code, pull address
+
+
+
+
+
+
+
+# if no postal code and no address , move on 
+
+
+
