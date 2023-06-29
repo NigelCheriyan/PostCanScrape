@@ -14,10 +14,17 @@ import urllib, xml.dom.minidom
 
 """ Pull CSV file"""
 
-file_name  = "Nigel Cheriyan Address Cleanup.xlsx"
+File_Name  = "Nigel Cheriyan Address Cleanup.xlsx"
 
-dfs = pd.read_excel(file_name, sheet_name=None) # pull data from file 
+Data_Frame = pd.read_excel(file_name, sheet_name=None) # pull data from file 
 
+
+""" Create search input function """
+
+def Search_Input(Row):
+    Unjoined_Search = Row.to_string(header=False,index=False,index_names=False).split('\n')
+    Joined_Search = [' '.join(ele.split()) for ele in x]
+    return Joined_Search
 
 """ Pull up Website ~~~ CODE FROM CAN POST API ADDRESS COMPLETE"""
 
@@ -72,8 +79,10 @@ def AddressComplete_Interactive_Find_v2_10(Key, SearchTerm, LastId, SearchFor, C
 
 """function to parse string data""" 
 
+def ParseResult(results):
+    results[Text]
 
-
+    
 
 
 """Loop across all the clientel and check address"""
