@@ -27,9 +27,7 @@ from selenium.common.exceptions import NoSuchElementException
 
 File_Name  = "Nigel Cheriyan Address Cleanup.xlsx"
 
-Fixed_Sheet = xlsxwriter.Workbook('Fixed_Sheet.xlsx')
-
-Excel_Sheet = pd.read_excel(File_Name, sheet_name='Sheet1',na_values ='NaN') # pull data from file 
+Excel_Sheet = pd.read_excel(File_Name, sheet_name='Database cleanup Pulled 10 2023',na_values ='NaN').iloc[:,0:9]# pull data from file 
 
 
 """ Create search input function """
