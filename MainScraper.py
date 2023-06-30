@@ -7,105 +7,109 @@ For Dying with Dignity
 @author: nigel
 """
 import urllib, xml.dom.minidom
+import pandas as pd
+import xlsxwriter
+import numpy as np
+
+
+import time
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 
 
 
 
-""" Pull CSV file"""
+""" Pull CSV file- Real File - Nigel Cheriyan Address Cleanup.xlsx """
 
-File_Name  = "Nigel Cheriyan Address Cleanup.xlsx"
+File_Name  = "Test Sheet-NC.xlsx"
 
-Data_Frame = pd.read_excel(file_name, sheet_name=None) # pull data from file 
+Fixed_Sheet = xlsxwriter.Workbook('Fixed_Sheet.xlsx')
+
+Excel_Sheet = pd.read_excel(File_Name, sheet_name='Sheet1',na_values ='NaN') # pull data from file 
 
 
 """ Create search input function """
 
 def Search_Input(Row):
-    Unjoined_Search = Row.to_string(header=False,index=False,index_names=False).split('\n')
-    Joined_Search = [' '.join(ele.split()) for ele in x]
+    Url_Row = Row.dropna()
+    Unjoined_Search = Url_Row.to_string(header=False,index=False).split('\n')
+    Joined_Search = [' '.join(ele.split()) for ele in Unjoined_Search]
     return Joined_Search
 
 """ Pull up Website ~~~ CODE FROM CAN POST API ADDRESS COMPLETE"""
-
-def AddressComplete_Interactive_Find_v2_10(Key, SearchTerm, LastId, SearchFor, Country, LanguagePreference, MaxSuggestions, MaxResults, Origin, Bias, Filters, GeoFence):
-
-      #Build the url
-      requestUrl = "http://ws1.postescanada-canadapost.ca/AddressComplete/Interactive/Find/v2.10/xmla.ws?"
-      requestUrl += "&" +  urllib.urlencode({"Key":Key})
-      requestUrl += "&" +  urllib.urlencode({"SearchTerm":SearchTerm})
-      requestUrl += "&" +  urllib.urlencode({"LastId":LastId})
-      requestUrl += "&" +  urllib.urlencode({"SearchFor":SearchFor})
-      requestUrl += "&" +  urllib.urlencode({"Country":Country})
-      requestUrl += "&" +  urllib.urlencode({"LanguagePreference":LanguagePreference})
-      requestUrl += "&" +  urllib.urlencode({"MaxSuggestions":MaxSuggestions})
-      requestUrl += "&" +  urllib.urlencode({"MaxResults":MaxResults})
-      requestUrl += "&" +  urllib.urlencode({"Origin":Origin})
-      requestUrl += "&" +  urllib.urlencode({"Bias":Bias})
-      requestUrl += "&" +  urllib.urlencode({"Filters":Filters})
-      requestUrl += "&" +  urllib.urlencode({"GeoFence":GeoFence})
-
-      #Get the data
-      dataDoc = xml.dom.minidom.parseString(urllib.urlopen(requestUrl).read())
-
-      #Get references to the schema and data
-      schemaNodes = dataDoc.getElementsByTagName("Column")
-      dataNotes = dataDoc.getElementsByTagName("Row")
-
-      #Check for an error
-      if len(schemaNodes) == 4 and schemaNodes[0].attributes["Name"].value == "Error":
-         raise Exception, dataNotes[0].attributes["Description"].value
-
-      #Work though the items in the response
-      results = []
-      for dataNode in dataNotes:
-         rowData = dict()
-         for schemaNode in schemaNodes:
-              key = schemaNode.attributes["Name"].value
-              value = dataNode.attributes[key].value
-              rowData[key] = value
-         results.append(rowData)
-
-       return results
-
-      #FYI: The output is an array of key value pairs, the keys being:
-      #Id
-      #Text
-      #Highlight
-      #Cursor
-      #Description
-      #Next
+#Key,SearchTerm, LastId, SearchFor , Country, LanguagePreference, MaxSuggestions, MaxResults, Origin, Bias, Filters, GeoFence
 
 
-"""function to parse string data""" 
+Url = "https://www.canadapost-postescanada.ca/ac/support/api/addresscomplete-interactive-find/"
 
-def ParseResult(results):
-    results[Text]
+Driver = webdriver.Chrome()
+
+Driver.get(Url)
+
+Search_Bar_Position = '//*[@id="tryitnow"]/div/div/div/div/div/section[1]/div/table/tbody/tr[1]/td[2]/input'
+Country_Position = '//*[@id="tryitnow"]/div/div/div/div/div/section[1]/div/table/tbody/tr[3]/td[2]/input'
+Enter_Position  = '//*[@id="btnTest"]'
+Address_Position = '//*[@id="pnlResults"]/table/tbody/tr/td[2]'
+Description_Position = '//*[@id="pnlResults"]/table/tbody/tr/td[5]'
+
+"""function to get data""" 
+
+def Get_Address(Joined_Search):
+    Locate_Search = Driver.find_element(By.XPATH, Search_Bar_Position)  
+    Locate_Search.clear()
+    Locate_Search.send_keys(Joined_Search)
+    Country_Search = Driver.find_element(By.XPATH,Country_Position)
+    Country_Search.clear()
+    Country_Search.send_keys(Country)
+    Locate_Enter = Driver.find_element(By.XPATH, Enter_Position)
+    Locate_Enter.click()
+    WebDriverWait(Driver, 5).until(EC.presence_of_element_located((By.XPATH, Address_Position)))
+    Address = Driver.find_element(By.XPATH, Address_Position).text
+    Description = Driver.find_element(By.XPATH, Description_Position).text
+    
+    if Description[-9:-1] == 'Addresse':
+        return None
+    else:
+        Identifiers = Description.split(',')
+        City = Identifiers[0]
+        Province = Identifiers[1]
+        Postal_Code = Identifiers[2]
+        return Address, City, Province, Postal_Code
+
 
     
 
 
 """Loop across all the clientel and check address"""
-
-
-
-
-
-
-
-# Pull postal code from csv
-
-
-
-# if no postal code, pull address
-
-
-
-
-
-
+Header = Excel_Sheet.columns.ravel()
+Header = np.append(Header, 'Successfull')
+Fixed_Sheet_Data = pd.DataFrame([],columns = Header)
+for Index, Row in Excel_Sheet.iterrows():
+    Country = Row['PREFERRED ADDRESS LINE COUNTRY']
+    results = Get_Address(Search_Input(Row))
+    if results == None:
+        row_unsuccessfull = Row
+        row_unsuccessfull['Successfull'] =  'No'
+        Fixed_Sheet_Data = Fixed_Sheet_Data.append(row_unsuccessfull)
+        pass
+    else:
+        Address = results[0]
+        City = results[1]
+        Province = results[2]
+        Postal_Code = results[3]
+        Fixed_Sheet_Data.loc[len(Fixed_Sheet_Data)] = [Address,'','','','',City,Province,Postal_Code,Country,'Yes']
+    
+    
+    
 
 # if no postal code and no address , move on 
 
 
+time.sleep(5) # Let the user actually see something!
+
+Driver.quit()
 
