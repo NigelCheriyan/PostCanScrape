@@ -18,14 +18,14 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-
+from selenium.common.exceptions import NoSuchElementException
 
 
 
 
 """ Pull CSV file- Real File - Nigel Cheriyan Address Cleanup.xlsx """
 
-File_Name  = "Test Sheet-NC.xlsx"
+File_Name  = "Nigel Cheriyan Address Cleanup.xlsx"
 
 Fixed_Sheet = xlsxwriter.Workbook('Fixed_Sheet.xlsx')
 
@@ -35,7 +35,7 @@ Excel_Sheet = pd.read_excel(File_Name, sheet_name='Sheet1',na_values ='NaN') # p
 """ Create search input function """
 
 def Search_Input(Row):
-    Url_Row = Row.dropna()
+    Url_Row = Row[0:8].dropna()
     Unjoined_Search = Url_Row.to_string(header=False,index=False).split('\n')
     Joined_Search = ' '.join(Unjoined_Search)
     return Joined_Search
@@ -55,7 +55,7 @@ Country_Position = '//*[@id="tryitnow"]/div/div/div/div/div/section[1]/div/table
 Enter_Position  = '//*[@id="btnTest"]'
 Address_Position = '//*[@id="pnlResults"]/table/tbody/tr/td[2]'
 Description_Position = '//*[@id="pnlResults"]/table/tbody/tr/td[5]'
-
+Second_Position = '//*[@id="pnlResults"]/table/tbody/tr[2]/td[2]'
 """function to get data""" 
 Descriptions = []
 def Get_Address(Joined_Search):
@@ -68,22 +68,26 @@ def Get_Address(Joined_Search):
     Locate_Enter = Driver.find_element(By.XPATH, Enter_Position)
     Locate_Enter.click()
     WebDriverWait(Driver, 5).until(EC.presence_of_element_located((By.XPATH, Address_Position)))
-    Address_Output = Driver.find_element(By.XPATH, Address_Position)
-    Address= [Address_Output.text]
-    Description_Output = Driver.find_element(By.XPATH, Description_Position)
-    
-    Description = Description_Output.text
-    Descriptions.append(Description)
-    time.sleep(randint(1,5))
-    if Description[-9:-1] == 'Addresse':
+    try:
+        plastic = Driver.find_element(By.XPATH,Second_Position)
         return None
-    else:
-        if Country == 'United States':
-            result = Address + Description.split(' ')
-        else:    
-            result = Address + Description.split(',')
-        return result
-
+        
+    except NoSuchElementException:                   
+        Address_Output = Driver.find_element(By.XPATH, Address_Position)
+        Address= [Address_Output.text]
+        Description_Output = Driver.find_element(By.XPATH, Description_Position)
+        
+        Description = Description_Output.text
+        Descriptions.append(Description)
+        time.sleep(randint(1,5))
+        if Description[-9:-1] == 'Addresse':
+            return None
+        else:
+            if Country == 'United States':
+                result = Address + Description.split(' ')
+            else:    
+                result = Address + Description.split(',')
+            return result
 
     
 
@@ -117,3 +121,4 @@ time.sleep(5) # Let the user actually see something!
 
 Driver.quit()
 
+Fixed_Sheet_Data.to_excel('Cleaned_Excel_Sheet_DWDC.xlsx')
