@@ -10,7 +10,7 @@ import urllib, xml.dom.minidom
 import pandas as pd
 import xlsxwriter
 import numpy as np
-
+from random import randint
 
 import time
 
@@ -37,7 +37,7 @@ Excel_Sheet = pd.read_excel(File_Name, sheet_name='Sheet1',na_values ='NaN') # p
 def Search_Input(Row):
     Url_Row = Row.dropna()
     Unjoined_Search = Url_Row.to_string(header=False,index=False).split('\n')
-    Joined_Search = [' '.join(ele.split()) for ele in Unjoined_Search]
+    Joined_Search = ' '.join(Unjoined_Search)
     return Joined_Search
 
 """ Pull up Website ~~~ CODE FROM CAN POST API ADDRESS COMPLETE"""
@@ -57,7 +57,7 @@ Address_Position = '//*[@id="pnlResults"]/table/tbody/tr/td[2]'
 Description_Position = '//*[@id="pnlResults"]/table/tbody/tr/td[5]'
 
 """function to get data""" 
-
+Descriptions = []
 def Get_Address(Joined_Search):
     Locate_Search = Driver.find_element(By.XPATH, Search_Bar_Position)  
     Locate_Search.clear()
@@ -68,17 +68,21 @@ def Get_Address(Joined_Search):
     Locate_Enter = Driver.find_element(By.XPATH, Enter_Position)
     Locate_Enter.click()
     WebDriverWait(Driver, 5).until(EC.presence_of_element_located((By.XPATH, Address_Position)))
-    Address = Driver.find_element(By.XPATH, Address_Position).text
-    Description = Driver.find_element(By.XPATH, Description_Position).text
+    Address_Output = Driver.find_element(By.XPATH, Address_Position)
+    Address= [Address_Output.text]
+    Description_Output = Driver.find_element(By.XPATH, Description_Position)
     
+    Description = Description_Output.text
+    Descriptions.append(Description)
+    time.sleep(randint(1,5))
     if Description[-9:-1] == 'Addresse':
         return None
     else:
-        Identifiers = Description.split(',')
-        City = Identifiers[0]
-        Province = Identifiers[1]
-        Postal_Code = Identifiers[2]
-        return Address, City, Province, Postal_Code
+        if Country == 'United States':
+            result = Address + Description.split(' ')
+        else:    
+            result = Address + Description.split(',')
+        return result
 
 
     
