@@ -6,14 +6,9 @@ Web Scraper to double check all addresses with Canada Post
 For Dying with Dignity
 @author: nigel
 """
-import urllib, xml.dom.minidom
 import pandas as pd
-import xlsxwriter
 import numpy as np
-from random import randint
-
 import time
-
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
@@ -54,6 +49,8 @@ Enter_Position  = '//*[@id="btnTest"]'
 Address_Position = '//*[@id="pnlResults"]/table/tbody/tr/td[2]'
 Description_Position = '//*[@id="pnlResults"]/table/tbody/tr/td[5]'
 Second_Position = '//*[@id="pnlResults"]/table/tbody/tr[2]/td[2]'
+
+Error_Position = '//*[@id="pnlError"]/table/tbody/tr/td[2]'
 """function to get data""" 
 Descriptions = []
 def Get_Address(Joined_Search):
@@ -61,55 +58,105 @@ def Get_Address(Joined_Search):
     Locate_Search.clear()
     Locate_Search.send_keys(Joined_Search)
     Country_Search = Driver.find_element(By.XPATH,Country_Position)
-    Country_Search.clear()
+    Country_Search.clear()    
     Country_Search.send_keys(Country)
+ 
+    
     Locate_Enter = Driver.find_element(By.XPATH, Enter_Position)
     Locate_Enter.click()
     WebDriverWait(Driver, 5).until(EC.presence_of_element_located((By.XPATH, Address_Position)))
     try:
-        plastic = Driver.find_element(By.XPATH,Second_Position)
-        return None
-        
-    except NoSuchElementException:                   
-        Address_Output = Driver.find_element(By.XPATH, Address_Position)
-        Address= [Address_Output.text]
-        Description_Output = Driver.find_element(By.XPATH, Description_Position)
-        
-        Description = Description_Output.text
-        Descriptions.append(Description)
-        time.sleep(randint(1,5))
-        if Description[-9:-1] == 'Addresse':
-            return None
+        Driver.find_element(By.XPATH,Error_Position)
+    except NoSuchElementException:
+        try:
+            Driver.find_element(By.XPATH,Second_Position)
+        except NoSuchElementException:
+            Address_Output = Driver.find_element(By.XPATH, Address_Position)
+            Address = Address_Output.text
+            Description_Output = Driver.find_element(By.XPATH, Description_Position)
+            Description = Description_Output.text
+            Descriptions.append(Description)
+            if Description[-9:-1] == 'Addresse':
+                return None
         else:
-            if Country == 'United States':
-                result = Address + Description.split(' ')
-            else:    
-                result = Address + Description.split(',')
-            return result
-
-    
+            return None
+        return Address, Description
+   
+        
 
 
+""" Parse String Format for associated country"""
+
+def Parse_String(Address, Description):
+        if Country == 'Canada':
+            Split_Description = Description.split(',')
+            City = Split_Description[0]
+            Province = Split_Description[1]
+            Postal_Code = Split_Description[2]
+            return [Address,'','','','',City,Province,Postal_Code,Country,'Yes']
+        if Country == 'United States' or 'USA':
+            Split_Description = Description.split(' ')
+            City = Split_Description[0]
+            Province = Split_Description[1]
+            Postal_Code = str(Split_Description[2])
+            return [Address,'','','','',City,Province,Postal_Code,Country,'Yes']
+        
+        if Country == 'Australia':
+            Split_Description = Address.split(',')
+            Address = Split_Description[0]
+            Split_Description = Split_Description[1].split(' ')
+            City = Split_Description[0]
+            Province = Split_Description[1]
+            Postal_Code = Split_Description[2]
+            return [Address,'','','','',City,Province,Postal_Code,Country,'Yes']
+        if Country in ['United Kingdom','England','UK','Belgium']:
+            Split_Description = Description.split(',')
+            City = Split_Description[0]
+            Postal_Code = Split_Description[1]
+            return [Address,'','','','',City,'',Postal_Code,Country,'Yes']
+        else:    
+            Split_Description = Description.split(' ')
+            City = Split_Description[0]
+            Postal_Code = Split_Description[1]
+            return [Address,'','','','',City,'',Postal_Code,Country,'Yes']
+
+                    
+        
 """Loop across all the clientel and check address"""
 Header = Excel_Sheet.columns.ravel()
 Header = np.append(Header, 'Successfull')
 Fixed_Sheet_Data = pd.DataFrame([],columns = Header)
+
+
 for Index, Row in Excel_Sheet.iterrows():
+    print(Index)
     Country = Row['PREFERRED ADDRESS LINE COUNTRY']
-    results = Get_Address(Search_Input(Row))
-    if results == None:
+    Search = Search_Input(Row)
+    if str(Country) == 'nan':
+        Country = 'Canada'
+    else:
+        pass
+    
+    if Search == 'Series([], )':
         row_unsuccessfull = Row
         row_unsuccessfull['Successfull'] =  'No'
-        Fixed_Sheet_Data = Fixed_Sheet_Data.append(row_unsuccessfull)
-        pass
+        Fixed_Sheet_Data.loc[len(Fixed_Sheet_Data)] = row_unsuccessfull
     else:
-        Address = results[0]
-        City = results[1]
-        Province = results[2]
-        Postal_Code = results[3]
-        Fixed_Sheet_Data.loc[len(Fixed_Sheet_Data)] = [Address,'','','','',City,Province,Postal_Code,Country,'Yes']
-    
-    
+        results = Get_Address(Search)
+        if results != None:
+            try:
+                Full_Parsed_String = Parse_String(results[0],results[1])
+                Fixed_Sheet_Data.loc[len(Fixed_Sheet_Data)] = Full_Parsed_String
+            except IndexError:
+                print('There was an Index Error')
+                pass
+        else:
+            row_unsuccessfull = Row
+            row_unsuccessfull['Successfull'] =  'No'
+            pass
+            Fixed_Sheet_Data.loc[len(Fixed_Sheet_Data)] = row_unsuccessfull
+
+            
     
 
 # if no postal code and no address , move on 
