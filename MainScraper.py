@@ -22,7 +22,7 @@ from selenium.common.exceptions import NoSuchElementException
 
 File_Name  = "Nigel Cheriyan Address Cleanup.xlsx"
 
-Excel_Sheet = pd.read_excel(File_Name, sheet_name='Database cleanup Pulled 10 2023',na_values ='NaN').iloc[:,0:9]# pull data from file 
+Excel_Sheet = pd.read_excel(File_Name, sheet_name='Database cleanup Pulled 10 2023',na_values ='NaN').iloc[:,0:9]# pull data from file
 
 
 """ Create search input function """
@@ -51,17 +51,17 @@ Description_Position = '//*[@id="pnlResults"]/table/tbody/tr/td[5]'
 Second_Position = '//*[@id="pnlResults"]/table/tbody/tr[2]/td[2]'
 
 Error_Position = '//*[@id="pnlError"]/table/tbody/tr/td[2]'
-"""function to get data""" 
+"""function to get data"""
 Descriptions = []
 def Get_Address(Joined_Search):
-    Locate_Search = Driver.find_element(By.XPATH, Search_Bar_Position)  
+    Locate_Search = Driver.find_element(By.XPATH, Search_Bar_Position)
     Locate_Search.clear()
     Locate_Search.send_keys(Joined_Search)
     Country_Search = Driver.find_element(By.XPATH,Country_Position)
-    Country_Search.clear()    
+    Country_Search.clear()
     Country_Search.send_keys(Country)
- 
-    
+
+
     Locate_Enter = Driver.find_element(By.XPATH, Enter_Position)
     Locate_Enter.click()
     WebDriverWait(Driver, 5).until(EC.presence_of_element_located((By.XPATH, Address_Position)))
@@ -80,9 +80,12 @@ def Get_Address(Joined_Search):
                 return None
         else:
             return None
-        return Address, Description
-   
-        
+    else:
+        return None
+
+    return Address, Description
+
+
 
 
 """ Parse String Format for associated country"""
@@ -100,7 +103,7 @@ def Parse_String(Address, Description):
             Province = Split_Description[1]
             Postal_Code = str(Split_Description[2])
             return [Address,'','','','',City,Province,Postal_Code,Country,'Yes']
-        
+
         if Country == 'Australia':
             Split_Description = Address.split(',')
             Address = Split_Description[0]
@@ -114,14 +117,14 @@ def Parse_String(Address, Description):
             City = Split_Description[0]
             Postal_Code = Split_Description[1]
             return [Address,'','','','',City,'',Postal_Code,Country,'Yes']
-        else:    
+        else:
             Split_Description = Description.split(' ')
             City = Split_Description[0]
             Postal_Code = Split_Description[1]
             return [Address,'','','','',City,'',Postal_Code,Country,'Yes']
 
-                    
-        
+
+
 """Loop across all the clientel and check address"""
 Header = Excel_Sheet.columns.ravel()
 Header = np.append(Header, 'Successfull')
@@ -136,7 +139,7 @@ for Index, Row in Excel_Sheet.iterrows():
         Country = 'Canada'
     else:
         pass
-    
+
     if Search == 'Series([], )':
         row_unsuccessfull = Row
         row_unsuccessfull['Successfull'] =  'No'
@@ -156,10 +159,10 @@ for Index, Row in Excel_Sheet.iterrows():
             pass
             Fixed_Sheet_Data.loc[len(Fixed_Sheet_Data)] = row_unsuccessfull
 
-            
-    
 
-# if no postal code and no address , move on 
+
+
+# if no postal code and no address , move on
 
 
 time.sleep(5) # Let the user actually see something!
