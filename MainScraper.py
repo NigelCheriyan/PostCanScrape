@@ -156,8 +156,9 @@ for Index, Row in Excel_Sheet.iterrows():
         else:
             row_unsuccessfull = Row
             row_unsuccessfull['Successfull'] =  'No'
-            pass
             Fixed_Sheet_Data.loc[len(Fixed_Sheet_Data)] = row_unsuccessfull
+            pass
+
 
 
 
