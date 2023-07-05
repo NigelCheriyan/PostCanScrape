@@ -51,17 +51,20 @@ Description_Position = '//*[@id="pnlResults"]/table/tbody/tr/td[5]'
 Second_Position = '//*[@id="pnlResults"]/table/tbody/tr[2]/td[2]'
 
 Error_Position = '//*[@id="pnlError"]/table/tbody/tr/td[2]'
+
+
+"""function to write in country """
+def Country_Search(Country):
+    Driver.find_element(By.XPATH,Country_Position)
+    Country_Search.clear()
+    Country_Search.send_keys(Country)
+
 """function to get data"""
 Descriptions = []
 def Get_Address(Joined_Search):
     Locate_Search = Driver.find_element(By.XPATH, Search_Bar_Position)
     Locate_Search.clear()
     Locate_Search.send_keys(Joined_Search)
-    Country_Search = Driver.find_element(By.XPATH,Country_Position)
-    Country_Search.clear()
-    Country_Search.send_keys(Country)
-
-
     Locate_Enter = Driver.find_element(By.XPATH, Enter_Position)
     Locate_Enter.click()
     WebDriverWait(Driver, 5).until(EC.presence_of_element_located((By.XPATH, Address_Position)))
@@ -87,23 +90,24 @@ def Get_Address(Joined_Search):
 
 
 
-
 """ Parse String Format for associated country"""
+def Parse_String_CAN(Address,Description):
+    Split_Description = Description.split(',')
+    City = Split_Description[0]
+    Province = Split_Description[1]
+    Postal_Code = Split_Description[2]
+    return [Address,'','','','',City,Province,Postal_Code,'Canada','Yes']
 
-def Parse_String(Address, Description):
-        if Country == 'Canada':
-            Split_Description = Description.split(',')
-            City = Split_Description[0]
-            Province = Split_Description[1]
-            Postal_Code = Split_Description[2]
-            return [Address,'','','','',City,Province,Postal_Code,Country,'Yes']
+
+
+
+def Parse_String_Non_CAN(Address, Description):
         if Country == 'United States' or 'USA':
             Split_Description = Description.split(' ')
             City = Split_Description[0]
             Province = Split_Description[1]
             Postal_Code = str(Split_Description[2])
             return [Address,'','','','',City,Province,Postal_Code,Country,'Yes']
-
         if Country == 'Australia':
             Split_Description = Address.split(',')
             Address = Split_Description[0]
@@ -123,46 +127,82 @@ def Parse_String(Address, Description):
             Postal_Code = Split_Description[1]
             return [Address,'','','','',City,'',Postal_Code,Country,'Yes']
 
+""" function for what to do if info was NOT found on Canada Post website"""
 
+def Unsuccessfull(Row):
+    row_unsuccessfull = Row
+    row_unsuccessfull['Successfull'] =  'No'
+    return row_unsuccessfull
+
+""" function for checking if data fits properly into array"""
+
+def Index_Input_CAN(results):
+        if results != None:
+            try:
+                return Parse_String_CAN(results[0],results[1])
+            except IndexError:
+                print('There was an Index Error')
+                return Unsuccessfull(Row)
+        else:
+            return Unsuccessfull(Row)
+
+def Index_Input_Non_CAN(results):
+        if results != None:
+            try:
+                return Parse_String_Non_CAN(results[0],results[1])
+            except IndexError:
+                print('There was an Index Error')
+                return Unsuccessfull(Row)
+        else:
+            return Unsuccessfull(Row)
 
 """Loop across all the clientel and check address"""
 Header = Excel_Sheet.columns.ravel()
 Header = np.append(Header, 'Successfull')
-Fixed_Sheet_Data = pd.DataFrame([],columns = Header)
+Fixed_Sheet_Data_CAN = pd.DataFrame([],columns = Header)
+Fixed_Sheet_Data_Non_CAN = pd.DataFrame([],columns = Header)
+Excel_Sheet_CAN = Excel_Sheet.loc[Excel_Sheet['PREFERRED ADDRESS LINE COUNTRY'] == 'Canada']
+Excel_Sheet_Non_CAN = Excel_Sheet.loc[Excel_Sheet['PREFERRED ADDRESS LINE COUNTRY'] != 'Canada']
 
 
-for Index, Row in Excel_Sheet.iterrows():
-    Country = Row['PREFERRED ADDRESS LINE COUNTRY']
+
+for Index, Row in Excel_Sheet_CAN.iterrows():
+    print(Index)
     Search = Search_Input(Row)
-    if str(Country) == 'nan':
-        Country = 'Canada'
-    else:
-        pass
-
     if Search == 'Series([], )':
-        row_unsuccessfull = Row
-        row_unsuccessfull['Successfull'] =  'No'
-        Fixed_Sheet_Data.loc[len(Fixed_Sheet_Data)] = row_unsuccessfull
-        print(row_unsuccessfull)
+        Fixed_Sheet_Data_CAN.loc[Index] = Unsuccessfull(Row)
     else:
         results = Get_Address(Search)
-        if results != None:
-            try:
-                Full_Parsed_String = Parse_String(results[0],results[1])
-                Fixed_Sheet_Data.loc[len(Fixed_Sheet_Data)] = Full_Parsed_String
-                print(Full_Parsed_String)
-            except IndexError:
-                print('There was an Index Error')
-                pass
+        New_Address = Index_Input_CAN(results)
+        if New_Address[-1]== 'No':
+            Search = Row['PREFERRED ADDRESS LINE 1']
+            print(Search)
+            results = Get_Address(Search)
+            New_Address = Index_Input_CAN(results)
+
+            if New_Address[7] == Row['PREFERRED ADDRESS POSTAL CODE']:
+                print(New_Address)
+                Fixed_Sheet_Data_CAN.loc[Index] = New_Address
+            else:
+                Fixed_Sheet_Data_CAN.loc[Index] = Unsuccessfull(Row)
         else:
-            row_unsuccessfull = Row
-            row_unsuccessfull['Successfull'] =  'No'
-            Fixed_Sheet_Data.loc[len(Fixed_Sheet_Data)] = row_unsuccessfull
-            print(row_unsuccessfull)
+            Fixed_Sheet_Data_CAN.loc[Index] = Unsuccessfull(Row)
 
-            pass
+for Index, Row in Excel_Sheet_Non_CAN.iterrows():
+    Search = Search_Input(Row)
+    if Search == 'Series([], )':
+        Fixed_Sheet_Data_Non_CAN.loc[Index] = Unsuccessfull(Row)
+    else:
+        Country = Row['PREFERRED ADDRESS LINE COUNTRY']
+        Country_Search(Country)
+        results = Get_Address(Search)
+        New_Address = Index_Input_Non_CAN(results)
+        if New_Address[-1] == 'No':
+            Search = Row['PREFERRED ADDRESS LINE 1']
+            results = Get_Address(Search)
+            New_Address = Index_Input_Non_CAN(results)
 
-
+    Fixed_Sheet_Data_Non_CAN.loc[Index] = New_Address
 
 
 
@@ -172,5 +212,7 @@ for Index, Row in Excel_Sheet.iterrows():
 time.sleep(5) # Let the user actually see something!
 
 Driver.quit()
+
+Fixed_Sheet_Data = pd.merge(Fixed_Sheet_Data_CAN,Fixed_Sheet_Data_Non_CAN)
 
 Fixed_Sheet_Data.to_excel('Cleaned_Excel_Sheet_DWDC.xlsx')
