@@ -132,7 +132,6 @@ Fixed_Sheet_Data = pd.DataFrame([],columns = Header)
 
 
 for Index, Row in Excel_Sheet.iterrows():
-    print(Index)
     Country = Row['PREFERRED ADDRESS LINE COUNTRY']
     Search = Search_Input(Row)
     if str(Country) == 'nan':
@@ -144,12 +143,14 @@ for Index, Row in Excel_Sheet.iterrows():
         row_unsuccessfull = Row
         row_unsuccessfull['Successfull'] =  'No'
         Fixed_Sheet_Data.loc[len(Fixed_Sheet_Data)] = row_unsuccessfull
+        print(row_unsuccessfull)
     else:
         results = Get_Address(Search)
         if results != None:
             try:
                 Full_Parsed_String = Parse_String(results[0],results[1])
                 Fixed_Sheet_Data.loc[len(Fixed_Sheet_Data)] = Full_Parsed_String
+                print(Full_Parsed_String)
             except IndexError:
                 print('There was an Index Error')
                 pass
@@ -157,6 +158,8 @@ for Index, Row in Excel_Sheet.iterrows():
             row_unsuccessfull = Row
             row_unsuccessfull['Successfull'] =  'No'
             Fixed_Sheet_Data.loc[len(Fixed_Sheet_Data)] = row_unsuccessfull
+            print(row_unsuccessfull)
+
             pass
 
 
