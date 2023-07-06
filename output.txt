@@ -1,19 +1,93 @@
 0
+274 Flora Ct. SS #1
+PREFERRED ADDRESS LINE 1          274 Flora Ct. SS #1
+PREFERRED ADDRESS LINE 2                          NaN
+PREFERRED ADDRESS LINE 3                          NaN
+PREFERRED ADDRESS LINE 4                          NaN
+PREFERRED ADDRESS LINE 5                          NaN
+PREFERRED ADDRESS LINE  CITY                   Stroud
+PREFERRED ADDRESS PROVINCE                         ON
+PREFERRED ADDRESS POSTAL CODE                 L0L 2M0
+PREFERRED ADDRESS LINE COUNTRY                 Canada
+Successfull                                        No
+Name: 0, dtype: object
 1
+House of Commons
+PREFERRED ADDRESS LINE 1              House of Commons
+PREFERRED ADDRESS LINE 2          Parliament Buildings
+PREFERRED ADDRESS LINE 3                           NaN
+PREFERRED ADDRESS LINE 4                           NaN
+PREFERRED ADDRESS LINE 5                           NaN
+PREFERRED ADDRESS LINE  CITY                    Ottawa
+PREFERRED ADDRESS PROVINCE                          ON
+PREFERRED ADDRESS POSTAL CODE                  K1A 0A6
+PREFERRED ADDRESS LINE COUNTRY                  Canada
+Successfull                                         No
+Name: 1, dtype: object
 2
+House of Commons
+PREFERRED ADDRESS LINE 1             House of Commons
+PREFERRED ADDRESS LINE 2          Parliament Building
+PREFERRED ADDRESS LINE 3                          NaN
+PREFERRED ADDRESS LINE 4                          NaN
+PREFERRED ADDRESS LINE 5                          NaN
+PREFERRED ADDRESS LINE  CITY                   Ottawa
+PREFERRED ADDRESS PROVINCE                         ON
+PREFERRED ADDRESS POSTAL CODE                 K1A 0A6
+PREFERRED ADDRESS LINE COUNTRY                 Canada
+Successfull                                        No
+Name: 2, dtype: object
 3
+House of Commons
+PREFERRED ADDRESS LINE 1              House of Commons
+PREFERRED ADDRESS LINE 2          Parliament Buildings
+PREFERRED ADDRESS LINE 3                           NaN
+PREFERRED ADDRESS LINE 4                           NaN
+PREFERRED ADDRESS LINE 5                           NaN
+PREFERRED ADDRESS LINE  CITY                    Ottawa
+PREFERRED ADDRESS PROVINCE                          ON
+PREFERRED ADDRESS POSTAL CODE                  K1A 0A6
+PREFERRED ADDRESS LINE COUNTRY                  Canada
+Successfull                                         No
+Name: 3, dtype: object
 4
+House of Commons
+PREFERRED ADDRESS LINE 1              House of Commons
+PREFERRED ADDRESS LINE 2          Parliament Buildings
+PREFERRED ADDRESS LINE 3                           NaN
+PREFERRED ADDRESS LINE 4                           NaN
+PREFERRED ADDRESS LINE 5                           NaN
+PREFERRED ADDRESS LINE  CITY                    Ottawa
+PREFERRED ADDRESS PROVINCE                          ON
+PREFERRED ADDRESS POSTAL CODE                  K1A 0A6
+PREFERRED ADDRESS LINE COUNTRY                  Canada
+Successfull                                         No
+Name: 4, dtype: object
 5
 6
 7
+309 - 1083 Tillicum Rd
 8
 9
 10
 11
 12
+80 Elgin Mills Road East
+PREFERRED ADDRESS LINE 1          80 Elgin Mills Road East
+PREFERRED ADDRESS LINE 2                               NaN
+PREFERRED ADDRESS LINE 3                               NaN
+PREFERRED ADDRESS LINE 4                               NaN
+PREFERRED ADDRESS LINE 5                               NaN
+PREFERRED ADDRESS LINE  CITY                 Richmond Hill
+PREFERRED ADDRESS PROVINCE                              ON
+PREFERRED ADDRESS POSTAL CODE                      L4C 0L3
+PREFERRED ADDRESS LINE COUNTRY                      Canada
+Successfull                                             No
+Name: 12, dtype: object
 13
 14
 15
+16
 17
 18
 19
@@ -26,9 +100,8 @@
 26
 27
 28
-nan
 29
-nan
+2465 Point Grey Rd.
 30
 31
 32
@@ -38,8 +111,181 @@ nan
 36
 37
 38
+Box 85, 13 James St.
 39
-nan
 40
 41
 42
+418210 96 St E
+PREFERRED ADDRESS LINE 1            418210 96 St E
+PREFERRED ADDRESS LINE 2          Box 17 aldersyde
+PREFERRED ADDRESS LINE 3                       NaN
+PREFERRED ADDRESS LINE 4                       NaN
+PREFERRED ADDRESS LINE 5                       NaN
+PREFERRED ADDRESS LINE  CITY      Foothills No. 31
+PREFERRED ADDRESS PROVINCE                      AB
+PREFERRED ADDRESS POSTAL CODE              T0L 0A0
+PREFERRED ADDRESS LINE COUNTRY              Canada
+Successfull                                     No
+Name: 42, dtype: object
+43
+44
+45
+46
+7031 Brentwood Dr
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+204 Church St
+PREFERRED ADDRESS LINE 1          204 Church St
+PREFERRED ADDRESS LINE 2                    NaN
+PREFERRED ADDRESS LINE 3                    NaN
+PREFERRED ADDRESS LINE 4                    NaN
+PREFERRED ADDRESS LINE 5                    NaN
+PREFERRED ADDRESS LINE  CITY           Stirling
+PREFERRED ADDRESS PROVINCE                   ON
+PREFERRED ADDRESS POSTAL CODE           K0K 3E0
+PREFERRED ADDRESS LINE COUNTRY           Canada
+Successfull                                  No
+Name: 56, dtype: object
+57
+58
+10035-105 St
+PREFERRED ADDRESS LINE 1          10035-105 St
+PREFERRED ADDRESS LINE 2                   NaN
+PREFERRED ADDRESS LINE 3                   NaN
+PREFERRED ADDRESS LINE 4                   NaN
+PREFERRED ADDRESS LINE 5                   NaN
+PREFERRED ADDRESS LINE  CITY          Edmonton
+PREFERRED ADDRESS PROVINCE                  AB
+PREFERRED ADDRESS POSTAL CODE          T5J 2V6
+PREFERRED ADDRESS LINE COUNTRY          Canada
+Successfull                                 No
+Name: 58, dtype: object
+59
+60
+61
+62
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+PO Box 700
+PREFERRED ADDRESS LINE 1          PO Box 700
+PREFERRED ADDRESS LINE 2                 NaN
+PREFERRED ADDRESS LINE 3                 NaN
+PREFERRED ADDRESS LINE 4                 NaN
+PREFERRED ADDRESS LINE 5                 NaN
+PREFERRED ADDRESS LINE  CITY        Cochrane
+PREFERRED ADDRESS PROVINCE                ON
+PREFERRED ADDRESS POSTAL CODE        P0L 1C0
+PREFERRED ADDRESS LINE COUNTRY        Canada
+Successfull                               No
+Name: 77, dtype: object
+80
+nan
+81
+Box 4160
+PREFERRED ADDRESS LINE 1                  Box 4160
+PREFERRED ADDRESS LINE 2          5110 - 48 Avenue
+PREFERRED ADDRESS LINE 3                       NaN
+PREFERRED ADDRESS LINE 4                       NaN
+PREFERRED ADDRESS LINE 5                       NaN
+PREFERRED ADDRESS LINE  CITY                Ponoka
+PREFERRED ADDRESS PROVINCE                      AB
+PREFERRED ADDRESS POSTAL CODE              T4J 1R6
+PREFERRED ADDRESS LINE COUNTRY              Canada
+Successfull                                     No
+Name: 81, dtype: object
+82
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+nan
+PREFERRED ADDRESS LINE 1               NaN
+PREFERRED ADDRESS LINE 2               NaN
+PREFERRED ADDRESS LINE 3               NaN
+PREFERRED ADDRESS LINE 4               NaN
+PREFERRED ADDRESS LINE 5               NaN
+PREFERRED ADDRESS LINE  CITY      Winnipeg
+PREFERRED ADDRESS PROVINCE              MB
+PREFERRED ADDRESS POSTAL CODE      R1N 3C3
+PREFERRED ADDRESS LINE COUNTRY      Canada
+Successfull                             No
+Name: 94, dtype: object
+95
+96
+nan
+PREFERRED ADDRESS LINE 1              NaN
+PREFERRED ADDRESS LINE 2              NaN
+PREFERRED ADDRESS LINE 3              NaN
+PREFERRED ADDRESS LINE 4              NaN
+PREFERRED ADDRESS LINE 5              NaN
+PREFERRED ADDRESS LINE  CITY       Ottawa
+PREFERRED ADDRESS PROVINCE             ON
+PREFERRED ADDRESS POSTAL CODE     K1S 5B7
+PREFERRED ADDRESS LINE COUNTRY     Canada
+Successfull                            No
+Name: 96, dtype: object
+97
+nan
+PREFERRED ADDRESS LINE 1              NaN
+PREFERRED ADDRESS LINE 2              NaN
+PREFERRED ADDRESS LINE 3              NaN
+PREFERRED ADDRESS LINE 4              NaN
+PREFERRED ADDRESS LINE 5              NaN
+PREFERRED ADDRESS LINE  CITY      Halifax
+PREFERRED ADDRESS PROVINCE             NS
+PREFERRED ADDRESS POSTAL CODE     B2W 0H9
+PREFERRED ADDRESS LINE COUNTRY     Canada
+Successfull                            No
+Name: 97, dtype: object
+98
+nan
+PREFERRED ADDRESS LINE 1              NaN
+PREFERRED ADDRESS LINE 2              NaN
+PREFERRED ADDRESS LINE 3              NaN
+PREFERRED ADDRESS LINE 4              NaN
+PREFERRED ADDRESS LINE 5              NaN
+PREFERRED ADDRESS LINE  CITY       Ottawa
+PREFERRED ADDRESS PROVINCE             ON
+PREFERRED ADDRESS POSTAL CODE     K1R 5M2
+PREFERRED ADDRESS LINE COUNTRY     Canada
+Successfull                            No
+Name: 98, dtype: object
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109

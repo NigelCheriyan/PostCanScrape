@@ -18,9 +18,9 @@ from selenium.common.exceptions import NoSuchElementException
 
 
 
-""" Pull CSV file- Real File - Test Sheet-NC.xlsx"""
-
-File_Name  = "Nigel Cheriyan Address Cleanup.xlsx"
+""" Pull CSV file"""
+"Test Sheet-NC.xlsx"
+File_Name  =  "Nigel Cheriyan Address Cleanup.xlsx"
 
 Excel_Sheet = pd.read_excel(File_Name, sheet_name='Database cleanup Pulled 10 2023',na_values ='NaN').iloc[:,0:9]# pull data from file
 
@@ -55,9 +55,9 @@ Error_Position = '//*[@id="pnlError"]/table/tbody/tr/td[2]'
 
 """function to write in country """
 def Country_Search(Country):
-    Driver.find_element(By.XPATH,Country_Position)
-    Country_Search.clear()
-    Country_Search.send_keys(Country)
+    C_Search = Driver.find_element(By.XPATH,Country_Position)
+    C_Search.clear()
+    C_Search.send_keys(Country)
 
 """function to get data"""
 Descriptions = []
@@ -67,10 +67,11 @@ def Get_Address(Joined_Search):
     Locate_Search.send_keys(Joined_Search)
     Locate_Enter = Driver.find_element(By.XPATH, Enter_Position)
     Locate_Enter.click()
-    WebDriverWait(Driver, 5).until(EC.presence_of_element_located((By.XPATH, Address_Position)))
     try:
-        Driver.find_element(By.XPATH,Error_Position)
-    except NoSuchElementException:
+        WebDriverWait(Driver, 5).until(EC.presence_of_element_located((By.XPATH, Address_Position)))
+    except TimeoutException:
+        return None
+    else:
         try:
             Driver.find_element(By.XPATH,Second_Position)
         except NoSuchElementException:
@@ -81,12 +82,12 @@ def Get_Address(Joined_Search):
             Descriptions.append(Description)
             if Description[-9:-1] == 'Addresse':
                 return None
+            else:
+                return Address, Description
         else:
             return None
-    else:
-        return None
 
-    return Address, Description
+
 
 
 
