@@ -16,12 +16,14 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 
 
+from selenium.common.exceptions import TimeoutException
+
 
 
 """ Pull CSV file"""
 "Test Sheet-NC.xlsx"
 File_Name  =  "Nigel Cheriyan Address Cleanup.xlsx"
-
+Rest_Excel = pd.read_excel(File_Name, sheet_name='Database cleanup Pulled 10 2023',na_values ='NaN').iloc[:,9:]
 Excel_Sheet = pd.read_excel(File_Name, sheet_name='Database cleanup Pulled 10 2023',na_values ='NaN').iloc[:,0:9]# pull data from file
 
 
@@ -73,20 +75,24 @@ def Get_Address(Joined_Search):
         return None
     else:
         try:
-            Driver.find_element(By.XPATH,Second_Position)
+            Driver.find_element(By.XPATH,Error_Position)
         except NoSuchElementException:
-            Address_Output = Driver.find_element(By.XPATH, Address_Position)
-            Address = Address_Output.text
-            Description_Output = Driver.find_element(By.XPATH, Description_Position)
-            Description = Description_Output.text
-            Descriptions.append(Description)
-            if Description[-9:-1] == 'Addresse':
-                return None
+            try:
+                Driver.find_element(By.XPATH,Second_Position)
+            except NoSuchElementException:
+                Address_Output = Driver.find_element(By.XPATH, Address_Position)
+                Address = Address_Output.text
+                Description_Output = Driver.find_element(By.XPATH, Description_Position)
+                Description = Description_Output.text
+                Descriptions.append(Description)
+                if Description[-9:-1] == 'Addresse':
+                    return None
+                else:
+                    return Address, Description
             else:
-                return Address, Description
+                return None
         else:
             return None
-
 
 
 
@@ -170,9 +176,8 @@ Excel_Sheet_Non_CAN = Excel_Sheet.loc[Excel_Sheet['PREFERRED ADDRESS LINE COUNTR
 for Index, Row in Excel_Sheet_CAN.iterrows():
     print(Index)
     Search = Search_Input(Row)
-    if Search == 'Series([], )':
-        Fixed_Sheet_Data_CAN.loc[Index] = Unsuccessfull(Row)
-    else:
+    Fixed_Sheet_Data_CAN.loc[Index] = Unsuccessfull(Row)
+    if Search != 'Series([], )':        
         results = Get_Address(Search)
         New_Address = Index_Input_CAN(results)
         if New_Address[-1]== 'No':
@@ -180,20 +185,23 @@ for Index, Row in Excel_Sheet_CAN.iterrows():
             print(Search)
             results = Get_Address(Search)
             New_Address = Index_Input_CAN(results)
-
-            if New_Address[7] == Row['PREFERRED ADDRESS POSTAL CODE']:
-                print(New_Address)
-                Fixed_Sheet_Data_CAN.loc[Index] = New_Address
+            
+            if New_Address[-1]== 'No':
+                print('Moving on')
             else:
-                Fixed_Sheet_Data_CAN.loc[Index] = Unsuccessfull(Row)
+                if New_Address[7] == Row['PREFERRED ADDRESS POSTAL CODE']:
+                    print(New_Address)
+                    Fixed_Sheet_Data_CAN.loc[Index] = New_Address
+                else: 
+                    print( "Blah")
         else:
-            Fixed_Sheet_Data_CAN.loc[Index] = Unsuccessfull(Row)
+            Fixed_Sheet_Data_CAN.loc[Index] = New_Address
 
 for Index, Row in Excel_Sheet_Non_CAN.iterrows():
+    print(Index)
     Search = Search_Input(Row)
-    if Search == 'Series([], )':
-        Fixed_Sheet_Data_Non_CAN.loc[Index] = Unsuccessfull(Row)
-    else:
+    Fixed_Sheet_Data_Non_CAN.loc[Index] = Unsuccessfull(Row)
+    if Search != 'Series([], )':
         Country = Row['PREFERRED ADDRESS LINE COUNTRY']
         Country_Search(Country)
         results = Get_Address(Search)
@@ -203,7 +211,8 @@ for Index, Row in Excel_Sheet_Non_CAN.iterrows():
             results = Get_Address(Search)
             New_Address = Index_Input_Non_CAN(results)
 
-    Fixed_Sheet_Data_Non_CAN.loc[Index] = New_Address
+        else:   
+            Fixed_Sheet_Data_Non_CAN.loc[Index] = New_Address
 
 
 
@@ -214,6 +223,7 @@ time.sleep(5) # Let the user actually see something!
 
 Driver.quit()
 
-Fixed_Sheet_Data = pd.merge(Fixed_Sheet_Data_CAN,Fixed_Sheet_Data_Non_CAN)
-
-Fixed_Sheet_Data.to_excel('Cleaned_Excel_Sheet_DWDC.xlsx')
+Fixed_Sheet_Data = pd.concat([Fixed_Sheet_Data_CAN,Fixed_Sheet_Data_Non_CAN], axis = 0)
+Fixed_Sheet_Data.sort_index(inplace = True)
+Full_Sheet = pd.concat([Fixed_Sheet_Data,Rest_Excel],axis = 1)
+Full_Sheet.to_excel('Cleaned_Excel_Sheet_DWDC.xlsx', index = False)
