@@ -14,14 +14,14 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
-
+from selenium.common.exceptions import TimeoutException
 
 
 
 """ Pull CSV file"""
-"Test Sheet-NC.xlsx"
-File_Name  =  "Nigel Cheriyan Address Cleanup.xlsx"
 
+File_Name  =   "Test Sheet-NC.xlsx" ##"Nigel Cheriyan Address Cleanup.xlsx"
+Rest_Excel = pd.read_excel(File_Name, sheet_name='Database cleanup Pulled 10 2023',na_values ='NaN').iloc[:,9:]
 Excel_Sheet = pd.read_excel(File_Name, sheet_name='Database cleanup Pulled 10 2023',na_values ='NaN').iloc[:,0:9]# pull data from file
 
 
@@ -73,20 +73,24 @@ def Get_Address(Joined_Search):
         return None
     else:
         try:
-            Driver.find_element(By.XPATH,Second_Position)
+            Driver.find_element(By.XPATH,Error_Position)
         except NoSuchElementException:
-            Address_Output = Driver.find_element(By.XPATH, Address_Position)
-            Address = Address_Output.text
-            Description_Output = Driver.find_element(By.XPATH, Description_Position)
-            Description = Description_Output.text
-            Descriptions.append(Description)
-            if Description[-9:-1] == 'Addresse':
-                return None
+            try:
+                Driver.find_element(By.XPATH,Second_Position)
+            except NoSuchElementException:
+                Address_Output = Driver.find_element(By.XPATH, Address_Position)
+                Address = Address_Output.text
+                Description_Output = Driver.find_element(By.XPATH, Description_Position)
+                Description = Description_Output.text
+                Descriptions.append(Description)
+                if Description[-9:-1] == 'Addresse':
+                    return None
+                else:
+                    return Address, Description
             else:
-                return Address, Description
+                return None
         else:
             return None
-
 
 
 
@@ -97,7 +101,8 @@ def Parse_String_CAN(Address,Description):
     City = Split_Description[0]
     Province = Split_Description[1]
     Postal_Code = Split_Description[2]
-    return [Address,'','','','',City,Province,Postal_Code,'Canada','Yes']
+    Success = [Address,'','','','',City,Province,Postal_Code,'Canada','Yes']
+    return Success
 
 
 
@@ -108,7 +113,8 @@ def Parse_String_Non_CAN(Address, Description):
             City = Split_Description[0]
             Province = Split_Description[1]
             Postal_Code = str(Split_Description[2])
-            return [Address,'','','','',City,Province,Postal_Code,Country,'Yes']
+            Success = [Address,'','','','',City,Province,Postal_Code,Country,'Yes']
+
         if Country == 'Australia':
             Split_Description = Address.split(',')
             Address = Split_Description[0]
@@ -116,26 +122,38 @@ def Parse_String_Non_CAN(Address, Description):
             City = Split_Description[0]
             Province = Split_Description[1]
             Postal_Code = Split_Description[2]
-            return [Address,'','','','',City,Province,Postal_Code,Country,'Yes']
+            Success =  [Address,'','','','',City,Province,Postal_Code,Country,'Yes']
         if Country in ['United Kingdom','England','UK','Belgium']:
             Split_Description = Description.split(',')
             City = Split_Description[0]
             Postal_Code = Split_Description[1]
-            return [Address,'','','','',City,'',Postal_Code,Country,'Yes']
+            Success = [Address,'','','','',City,'',Postal_Code,Country,'Yes']
+            return
         else:
             Split_Description = Description.split(' ')
             City = Split_Description[0]
             Postal_Code = Split_Description[1]
-            return [Address,'','','','',City,'',Postal_Code,Country,'Yes']
+            Success =  [Address,'','','','',City,'',Postal_Code,Country,'Yes']
 
+        return Success
 """ function for what to do if info was NOT found on Canada Post website"""
 
-def Unsuccessfull(Row):
-    row_unsuccessfull = Row
-    row_unsuccessfull['Successfull'] =  'No'
-    return row_unsuccessfull
+def Unsuccessful(Row):
+    row_unsuccessful = Row
+    row_unsuccessful['Successful'] =  'No'
+    return row_unsuccessful
+
+"""Highlighting Function"""
+
+def rowStyle(row):
+    if row['Successful'] == 'Yes':
+        print('Highlight Green')
+        return ['background-color: green'] * len(row)
+    return [''] * len(row)
+
 
 """ function for checking if data fits properly into array"""
+
 
 def Index_Input_CAN(results):
         if results != None:
@@ -143,9 +161,9 @@ def Index_Input_CAN(results):
                 return Parse_String_CAN(results[0],results[1])
             except IndexError:
                 print('There was an Index Error')
-                return Unsuccessfull(Row)
+                return Unsuccessful(Row)
         else:
-            return Unsuccessfull(Row)
+            return Unsuccessful(Row)
 
 def Index_Input_Non_CAN(results):
         if results != None:
@@ -153,13 +171,13 @@ def Index_Input_Non_CAN(results):
                 return Parse_String_Non_CAN(results[0],results[1])
             except IndexError:
                 print('There was an Index Error')
-                return Unsuccessfull(Row)
+                return Unsuccessful(Row)
         else:
-            return Unsuccessfull(Row)
+            return Unsuccessful(Row)
 
 """Loop across all the clientel and check address"""
 Header = Excel_Sheet.columns.ravel()
-Header = np.append(Header, 'Successfull')
+Header = np.append(Header, 'Successful')
 Fixed_Sheet_Data_CAN = pd.DataFrame([],columns = Header)
 Fixed_Sheet_Data_Non_CAN = pd.DataFrame([],columns = Header)
 Excel_Sheet_CAN = Excel_Sheet.loc[Excel_Sheet['PREFERRED ADDRESS LINE COUNTRY'] == 'Canada']
@@ -170,9 +188,8 @@ Excel_Sheet_Non_CAN = Excel_Sheet.loc[Excel_Sheet['PREFERRED ADDRESS LINE COUNTR
 for Index, Row in Excel_Sheet_CAN.iterrows():
     print(Index)
     Search = Search_Input(Row)
-    if Search == 'Series([], )':
-        Fixed_Sheet_Data_CAN.loc[Index] = Unsuccessfull(Row)
-    else:
+    Fixed_Sheet_Data_CAN.loc[Index] = Unsuccessful(Row)
+    if Search != 'Series([], )':
         results = Get_Address(Search)
         New_Address = Index_Input_CAN(results)
         if New_Address[-1]== 'No':
@@ -181,19 +198,22 @@ for Index, Row in Excel_Sheet_CAN.iterrows():
             results = Get_Address(Search)
             New_Address = Index_Input_CAN(results)
 
-            if New_Address[7] == Row['PREFERRED ADDRESS POSTAL CODE']:
-                print(New_Address)
-                Fixed_Sheet_Data_CAN.loc[Index] = New_Address
+            if New_Address[-1]== 'No':
+                print('Moving on')
             else:
-                Fixed_Sheet_Data_CAN.loc[Index] = Unsuccessfull(Row)
+                if New_Address[7] == Row['PREFERRED ADDRESS POSTAL CODE']:
+                    print(New_Address)
+                    Fixed_Sheet_Data_CAN.loc[Index] = New_Address
+                else:
+                    print( "Blah")
         else:
-            Fixed_Sheet_Data_CAN.loc[Index] = Unsuccessfull(Row)
+            Fixed_Sheet_Data_CAN.loc[Index] = New_Address
 
 for Index, Row in Excel_Sheet_Non_CAN.iterrows():
+    print(Index)
     Search = Search_Input(Row)
-    if Search == 'Series([], )':
-        Fixed_Sheet_Data_Non_CAN.loc[Index] = Unsuccessfull(Row)
-    else:
+    Fixed_Sheet_Data_Non_CAN.loc[Index] = Unsuccessful(Row)
+    if Search != 'Series([], )':
         Country = Row['PREFERRED ADDRESS LINE COUNTRY']
         Country_Search(Country)
         results = Get_Address(Search)
@@ -203,17 +223,20 @@ for Index, Row in Excel_Sheet_Non_CAN.iterrows():
             results = Get_Address(Search)
             New_Address = Index_Input_Non_CAN(results)
 
-    Fixed_Sheet_Data_Non_CAN.loc[Index] = New_Address
+        else:
+            Fixed_Sheet_Data_Non_CAN.loc[Index] = New_Address
 
 
 
 # if no postal code and no address , move on
 
 
-time.sleep(5) # Let the user actually see something!
-
 Driver.quit()
 
-Fixed_Sheet_Data = pd.merge(Fixed_Sheet_Data_CAN,Fixed_Sheet_Data_Non_CAN)
-
-Fixed_Sheet_Data.to_excel('Cleaned_Excel_Sheet_DWDC.xlsx')
+Fixed_Sheet_Data = pd.concat([Fixed_Sheet_Data_CAN,Fixed_Sheet_Data_Non_CAN], axis = 0)
+Fixed_Sheet_Data.sort_index(inplace = True)
+Full_Sheet = pd.concat([Fixed_Sheet_Data,Rest_Excel],axis = 1)
+Full_Sheet.style.apply(rowStyle,axis = 1)
+print(Full_Sheet)
+Full_Sheet.style.to_excel('Cleaned_Excel_Sheet__back_DWDC.xlsx', index = False)
+Rest_Excel.to_excel('JustChecking.xlsx',index = 'False')
