@@ -177,6 +177,8 @@ def Index_Input_Non_CAN(results):
         else:
             return Unsuccessful(Row)
 
+    
+
 """Loop across all the clientel and check address"""
 Header = Excel_Sheet.columns.ravel()
 Header = np.append(Header, 'Successful')
@@ -238,7 +240,5 @@ Driver.quit()
 Fixed_Sheet_Data = pd.concat([Fixed_Sheet_Data_CAN,Fixed_Sheet_Data_Non_CAN], axis = 0)
 Fixed_Sheet_Data.sort_index(inplace = True)
 Full_Sheet = pd.concat([Fixed_Sheet_Data,Rest_Excel],axis = 1)
-Full_Sheet.style.apply(rowStyle,axis = 1)
-print(Full_Sheet)
-Full_Sheet.style.to_excel('Cleaned_Excel_Sheet__back_DWDC.xlsx', index = False)
-Rest_Excel.to_excel('JustChecking.xlsx',index = 'False')
+
+Full_Sheet.style.apply(rowStyle,axis = 1).to_excel('Cleaned_Excel_Sheet__back_DWDC.xlsx', index = False)
