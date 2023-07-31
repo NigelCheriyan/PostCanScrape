@@ -19,12 +19,14 @@ from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import TimeoutException
 
 
+from pydrive.auth import GoogleAuth
+from pydrive.drive import GoogleDrive
 
 """ Pull CSV file"""
 
-File_Name  =   "Test Sheet-NC.xlsx" ##"Nigel Cheriyan Address Cleanup.xlsx"
-Rest_Excel = pd.read_excel(File_Name, sheet_name='Database cleanup Pulled 10 2023',na_values ='NaN').iloc[:,9:]
-Excel_Sheet = pd.read_excel(File_Name, sheet_name='Database cleanup Pulled 10 2023',na_values ='NaN').iloc[:,0:9]# pull data from file
+File_Name  =  "Nigel Cheriyan Address Cleanup.xlsx"
+Rest_Excel = pd.read_excel(File_Name, sheet_name='Database cleanup Pulled 10 2023',na_values ='NaN').iloc[30000:,9:]
+Excel_Sheet = pd.read_excel(File_Name, sheet_name='Database cleanup Pulled 10 2023',na_values ='NaN').iloc[30000:,0:9]# pull data from file
 
 
 """ Create search input function """
@@ -130,7 +132,6 @@ def Parse_String_Non_CAN(Address, Description):
             City = Split_Description[0]
             Postal_Code = Split_Description[1]
             Success = [Address,'','','','',City,'',Postal_Code,Country,'Yes']
-            return
         else:
             Split_Description = Description.split(' ')
             City = Split_Description[0]
@@ -241,4 +242,4 @@ Fixed_Sheet_Data = pd.concat([Fixed_Sheet_Data_CAN,Fixed_Sheet_Data_Non_CAN], ax
 Fixed_Sheet_Data.sort_index(inplace = True)
 Full_Sheet = pd.concat([Fixed_Sheet_Data,Rest_Excel],axis = 1)
 
-Full_Sheet.style.apply(rowStyle,axis = 1).to_excel('Cleaned_Excel_Sheet__back_DWDC.xlsx', index = False)
+Full_Sheet.style.apply(rowStyle,axis = 1).to_excel('Cleaned_Excel_Sheet_DWDC_1.xlsx', index = False)
