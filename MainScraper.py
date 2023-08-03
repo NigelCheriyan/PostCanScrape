@@ -22,11 +22,16 @@ from selenium.common.exceptions import TimeoutException
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 
+
+
+st = time.time()
+pts = time.process_time()
 """ Pull CSV file"""
 
 File_Name  =  "Nigel Cheriyan Address Cleanup.xlsx"
-Rest_Excel = pd.read_excel(File_Name, sheet_name='Database cleanup Pulled 10 2023',na_values ='NaN').iloc[30000:,9:]
-Excel_Sheet = pd.read_excel(File_Name, sheet_name='Database cleanup Pulled 10 2023',na_values ='NaN').iloc[30000:,0:9]# pull data from file
+Rest_Excel = pd.read_excel(File_Name, sheet_name='Database cleanup Pulled 10 2023',na_values ='NaN').iloc[:,9:]
+
+Excel_Sheet = pd.read_excel(File_Name, sheet_name='Database cleanup Pulled 10 2023',na_values ='NaN').iloc[:,0:9]# pull data from file
 
 
 """ Create search input function """
@@ -53,7 +58,6 @@ Enter_Position  = '//*[@id="btnTest"]'
 Address_Position = '//*[@id="pnlResults"]/table/tbody/tr/td[2]'
 Description_Position = '//*[@id="pnlResults"]/table/tbody/tr/td[5]'
 Second_Position = '//*[@id="pnlResults"]/table/tbody/tr[2]/td[2]'
-
 Error_Position = '//*[@id="pnlError"]/table/tbody/tr/td[2]'
 
 
@@ -65,37 +69,28 @@ def Country_Search(Country):
 
 """function to get data"""
 Descriptions = []
+Error = Driver.find_elements(By.XPATH,Error_Position)
+Second = Driver.find_elements(By.XPATH,Second_Position)
 def Get_Address(Joined_Search):
     Locate_Search = Driver.find_element(By.XPATH, Search_Bar_Position)
     Locate_Search.clear()
     Locate_Search.send_keys(Joined_Search)
     Locate_Enter = Driver.find_element(By.XPATH, Enter_Position)
     Locate_Enter.click()
-    try:
-        WebDriverWait(Driver, 5).until(EC.presence_of_element_located((By.XPATH, Address_Position)))
-    except TimeoutException:
-        return None
-    else:
-        try:
-            Driver.find_element(By.XPATH,Error_Position)
-        except NoSuchElementException:
-            try:
-                Driver.find_element(By.XPATH,Second_Position)
-            except NoSuchElementException:
-                Address_Output = Driver.find_element(By.XPATH, Address_Position)
-                Address = Address_Output.text
-                Description_Output = Driver.find_element(By.XPATH, Description_Position)
-                Description = Description_Output.text
-                Descriptions.append(Description)
-                if Description[-9:-1] == 'Addresse':
-                    return None
-                else:
-                    return Address, Description
-            else:
-                return None
-        else:
-            return None
+    WebDriverWait(Driver, 5).until(EC.element_to_be_clickable((By.XPATH,Enter_Position)))
 
+    try:
+        Second.text
+        Error.text
+    except AttributeError:
+        Address_Output = Driver.find_element(By.XPATH, Address_Position)
+        Address = Address_Output.text
+        Description_Output = Driver.find_element(By.XPATH, Description_Position)
+        Description = Description_Output.text
+        Descriptions.append(Description)
+        if Description[-9:-1] == 'Addresse':
+            return None
+        return Address, Description
 
 
 
@@ -127,6 +122,7 @@ def Parse_String_Non_CAN(Address, Description):
             Province = Split_Description[1]
             Postal_Code = Split_Description[2]
             Success =  [Address,'','','','',City,Province,Postal_Code,Country,'Yes']
+
         if Country in ['United Kingdom','England','UK','Belgium']:
             Split_Description = Description.split(',')
             City = Split_Description[0]
@@ -158,27 +154,27 @@ def rowStyle(row):
 """ function for checking if data fits properly into array"""
 
 
-def Index_Input_CAN(results):
-        if results != None:
+def Index_Input_CAN(Results):
+        if Results != None:
             try:
-                return Parse_String_CAN(results[0],results[1])
+                return Parse_String_CAN(Results[0],Results[1])
             except IndexError:
                 print('There was an Index Error')
                 return Unsuccessful(Row)
         else:
             return Unsuccessful(Row)
 
-def Index_Input_Non_CAN(results):
-        if results != None:
+def Index_Input_Non_CAN(Results):
+        if Results != None:
             try:
-                return Parse_String_Non_CAN(results[0],results[1])
+                return Parse_String_Non_CAN(Results[0],Results[1])
             except IndexError:
                 print('There was an Index Error')
                 return Unsuccessful(Row)
         else:
             return Unsuccessful(Row)
 
-    
+
 
 """Loop across all the clientel and check address"""
 Header = Excel_Sheet.columns.ravel()
@@ -195,15 +191,14 @@ for Index, Row in Excel_Sheet_CAN.iterrows():
     Search = Search_Input(Row)
     Fixed_Sheet_Data_CAN.loc[Index] = Unsuccessful(Row)
     if Search != 'Series([], )':
-        results = Get_Address(Search)
-        New_Address = Index_Input_CAN(results)
+        Results = Get_Address(Search)
+        New_Address = Index_Input_CAN(Results)
         if New_Address[-1]== 'No':
             Search = Row['PREFERRED ADDRESS LINE 1']
             print(Search)
-            results = Get_Address(Search)
-            New_Address = Index_Input_CAN(results)
-
-            if New_Address[-1]== 'No':
+            Results = Get_Address(Search)
+            New_Address = Index_Input_CAN(Results)
+            if New_Address[-1] == 'No':
                 print('Moving on')
             else:
                 if New_Address[7] == Row['PREFERRED ADDRESS POSTAL CODE']:
@@ -214,6 +209,8 @@ for Index, Row in Excel_Sheet_CAN.iterrows():
         else:
             Fixed_Sheet_Data_CAN.loc[Index] = New_Address
 
+
+print('Starting on Non-Canada')
 for Index, Row in Excel_Sheet_Non_CAN.iterrows():
     print(Index)
     Search = Search_Input(Row)
@@ -221,12 +218,12 @@ for Index, Row in Excel_Sheet_Non_CAN.iterrows():
     if Search != 'Series([], )':
         Country = Row['PREFERRED ADDRESS LINE COUNTRY']
         Country_Search(Country)
-        results = Get_Address(Search)
-        New_Address = Index_Input_Non_CAN(results)
+        Results = Get_Address(Search)
+        New_Address = Index_Input_Non_CAN(Results)
         if New_Address[-1] == 'No':
             Search = Row['PREFERRED ADDRESS LINE 1']
-            results = Get_Address(Search)
-            New_Address = Index_Input_Non_CAN(results)
+            Results = Get_Address(Search)
+            New_Address = Index_Input_Non_CAN(Results)
 
         else:
             Fixed_Sheet_Data_Non_CAN.loc[Index] = New_Address
@@ -237,9 +234,13 @@ for Index, Row in Excel_Sheet_Non_CAN.iterrows():
 
 
 Driver.quit()
-
+et = time.time()
+pte = time.process_time()
+elapsed_time = st - et
+elapsed_process_time = pts - pte
+print("Time Passed:" ,elapsed_time/60, "Minutes")
+print("Process time:", elapsed_process_time, "Seconds")
 Fixed_Sheet_Data = pd.concat([Fixed_Sheet_Data_CAN,Fixed_Sheet_Data_Non_CAN], axis = 0)
 Fixed_Sheet_Data.sort_index(inplace = True)
 Full_Sheet = pd.concat([Fixed_Sheet_Data,Rest_Excel],axis = 1)
-
 Full_Sheet.style.apply(rowStyle,axis = 1).to_excel('Cleaned_Excel_Sheet_DWDC_1.xlsx', index = False)
